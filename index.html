@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ガチャ禁カウンター</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="modern.css">
+</head>
+<body>
+  <!-- Cookie同意ダイアログ -->
+  <div id="cookieDialog" class="cookie-dialog hidden">
+    <div class="cookie-title">🍪 データ保存について</div>
+    <div class="cookie-content">
+      <p><strong>このアプリケーションは、以下の目的でブラウザのローカルストレージ機能を使用します：</strong></p>
+      <ul class="cookie-list">
+        <li>ガチャ禁記録データの保存</li>
+        <li>アプリの設定情報の保存</li>
+        <li>ユーザー体験の向上</li>
+      </ul>
+      <p class="cookie-note">※保存されるデータは全てお使いのデバイス内に保存され、外部サーバーには送信されません。</p>
+      <p class="cookie-warning">ブラウザの設定でローカルデータを削除すると、保存した記録も消失しますのでご注意ください。</p>
+    </div>
+    <div class="cookie-actions">
+      <label class="cookie-consent-label">
+        <input type="checkbox" id="cookieConsentCheck"> <a href="Terms.html" target="_blank">利用規約</a>、Cookie利用に同意します
+      </label>
+      <button id="cookieConsentBtn">同意して開始</button>
+    </div>
+  </div>
+
+  <div id="mainArea">
+    <div class="title-row">
+      <h1>ガチャ禁カウンター</h1>
+      <div class="btn-column">
+        <button id="calcBtn" title="天井計算機" class="calc-btn-text calc-btn-wide" aria-label="天井計算機">計算機</button>
+        <div class="btn-row">
+          <button id="settingsBtn" title="設定" class="calc-btn-text" aria-label="設定">設定</button>
+          <button id="qaBtn" title="Q&A" class="calc-btn-text" aria-label="Q&A">Q&A</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- データ切替スイッチャー -->
+    <div class="slot-switcher" id="slotSwitcher"></div>
+
+    <!-- 設定モーダル -->
+    <div id="settingsModal" class="modal hidden" tabindex="-1">
+      <div class="modal-content">
+        <div class="settings-tabs">
+          <button class="tab-btn active" data-tab="data">データ設定</button>
+          <button class="tab-btn" data-tab="general">全般設定</button>
+        </div>
+        <div class="tab-content" id="dataTab">
+          <div class="data-slot-list" id="dataSlotList"></div>
+        </div>
+        <div class="tab-content hidden" id="generalTab">
+          <div class="general-settings">
+            <h3>表示設定</h3>
+            <div class="toggle-setting">
+              <span>グラフを表示する</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="showGraphSetting" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="toggle-setting">
+              <span>履歴テーブルを表示する</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="showHistorySetting" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="toggle-setting">
+              <span>ダークモード</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="darkModeSetting">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <button id="saveGeneralSettings" type="button">設定保存</button>
+          </div>
+        </div>
+        <button id="closeSettingsModal" type="button">閉じる</button>
+      </div>
+    </div>
+
+    <!-- 天井計算モーダル -->
+    <div id="calcModal" class="modal hidden" tabindex="-1">
+      <div class="modal-content">
+        <strong>ガチャ天井計算機</strong>
+        <div>
+          <label>あと何回で天井？
+            <input type="number" id="calcLeftCount" min="1" value="50">
+          </label>
+          <label>1回に必要な<span id="calcCurrencyLabel">通貨</span>数
+            <input type="number" id="calcPerCurrency" min="1" value="160">
+          </label>
+          <label>現在の<span id="calcNowLabel">通貨</span>数（空欄で0扱い）
+            <input type="number" id="calcCurrentCurrency" min="0" value="">
+          </label>
+        </div>
+        <button id="calcExecBtn" type="button">計算</button>
+        <div class="result" id="calcResult" style="margin-top:1em;"></div>
+        <button id="calcCloseBtn" type="button" style="margin-top:1.2em;">閉じる</button>
+      </div>
+    </div>
+
+    <!-- Q&Aモーダル -->
+    <div id="qaModal" class="modal hidden" tabindex="-1">
+      <div class="modal-content qa-modal-content">
+        <div class="qa-header">
+          <span class="qa-icon">❓</span>
+          <strong>Q&A - よくある質問</strong>
+        </div>
+        <div class="qa-content">
+          <div class="qa-item">
+            <div class="qa-question">📈 グラフが表示されません</div>
+            <div class="qa-answer">データを記録するとグラフが表示されます。また、設定メニューからグラフ表示のオン/オフを切り替えられます。</div>
+          </div>
+          <div class="qa-item">
+            <div class="qa-question">📱 スマホで使えますか？</div>
+            <div class="qa-answer">はい、スマートフォンのブラウザでも利用できます。</div>
+          </div>
+          <div class="qa-item">
+            <div class="qa-question">🔄 データを復元できますか？</div>
+            <div class="qa-answer">エクスポートしたファイル（CSVまたはJSON）をインポートすることでデータを復元できます。</div>
+          </div>
+          <div class="qa-item">
+            <div class="qa-question">🎯 即時入力ボタンを変更できますか？</div>
+            <div class="qa-answer">データスロットの「編集」ボタンから即時入力ボタンのラベルと数値をカスタマイズできます。</div>
+          </div>
+          <div class="qa-item">
+            <div class="qa-question">📊 計算機の使い方を教えてください</div>
+            <div class="qa-answer">「計算機」ボタンから天井までの必要な通貨数や、現在の通貨で何回回せるかを計算できます。</div>
+          </div>
+        </div>
+        <div class="qa-usage">
+          <div class="qa-usage-title">使い方ガイド</div>
+          <div class="qa-usage-content">
+            <p>アプリの詳しい使い方や活用方法については、以下のガイドをご覧ください。</p>
+            <button id="usageGuideBtn" type="button" class="usage-btn">
+              使い方はこちら
+            </button>
+          </div>
+        </div>
+        <div class="qa-support">
+          <div class="qa-support-title">バグ報告・お問い合わせ</div>
+          <div class="qa-support-content">
+            <p>バグを発見したり、ご質問がある場合は、XのDMでお気軽にお知らせください。</p>
+            <button id="contactTwitterBtn" type="button" class="contact-btn">
+              Xで連絡する
+            </button>
+            <div class="qa-support-note">
+              アカウント: @SamoPrs54805
+            </div>
+          </div>
+        </div>
+        <button id="closeQaModal" type="button" style="margin-top:1.5em;">閉じる</button>
+      </div>
+    </div>
+
+    <!-- データ個別設定用モーダル -->
+    <div id="slotSettingsModal" class="modal hidden" tabindex="-1">
+      <div class="modal-content">
+        <strong>データ設定</strong>
+        <div class="slot-settings-content">
+          <label>データ名
+            <input type="text" id="slotSettingsLabelInput" maxlength="12">
+          </label>
+          <div style="margin:0.7em 0 0.4em 0;">
+            <strong>即時入力ボタン編集</strong>
+            <div style="font-size:0.9em;color:#64748b;margin-top:0.3em;">※最大7文字</div>
+          </div>
+          <div id="slotSettingsQuickBtnsForm"></div>
+          <button id="slotSettingsQuickBtnsSave" type="button">即時入力ボタン保存</button>
+        </div>
+        <button id="closeSlotSettingsModal" type="button">閉じる</button>
+        <div style="margin-top:0.8em;">
+          <button id="slotSettingsResetBtn" type="button" class="reset-btn">このデータをリセット</button>
+        </div>
+        <div class="small" style="margin-top:0.6em;">※リセットしたデータは元に戻せません。</div>
+      </div>
+    </div>
+    <div class="modal-backdrop hidden"></div>
+
+    <!-- 設定フォーム -->
+    <div id="settingsFormArea">
+      <form id="settingsForm" autocomplete="off">
+        <label>ガチャ禁開始日（必須）
+          <input type="date" id="startDate" required>
+          <div class="date-quick-btns">
+            <button type="button" class="date-quick-btn" data-days="0">今日</button>
+            <button type="button" class="date-quick-btn" data-days="1">昨日</button>
+            <button type="button" class="date-quick-btn" data-days="7">1週間前</button>
+            <button type="button" class="date-quick-btn" data-days="30">1ヶ月前</button>
+          </div>
+        </label>
+        <label>通貨ラベル（例: 石, ジュエル, ポイント） 
+          <input type="text" id="currencyLabelInput" maxlength="8" placeholder="通貨">
+        </label>
+        <label>目標<span id="targetCurrencyLabel">通貨</span>数（任意　※空欄の場合、50万に自動設定）
+          <input type="number" id="targetCurrency" min="1" step="1" pattern="\d*">
+          <span class="error" id="targetCurrencyErr"></span>
+        </label>
+        <label>目標日付（任意）
+          <input type="date" id="targetDate">
+          <div class="date-quick-btns">
+            <button type="button" class="date-quick-btn" data-days="-7" data-target="targetDate">1週間後</button>
+            <button type="button" class="date-quick-btn" data-days="-30" data-target="targetDate">1ヶ月後</button>
+            <button type="button" class="date-quick-btn" data-days="-90" data-target="targetDate">3ヶ月後</button>
+          </div>
+        </label>
+        <label>現在の<span id="settingsCurrentCurrencyLabel">通貨</span>数
+          <input type="number" id="settingsCurrentCurrency" min="0" required step="1" pattern="\d*">
+          <span class="error" id="settingsCurrentCurrencyErr"></span>
+        </label>
+        <button type="submit" id="saveSettingsBtn">設定保存</button>
+      </form>
+    </div>
+
+    <!-- 現在の通貨数は独立して常に表示 -->
+    <div id="currentCurrencyArea">
+      <label>現在の<span id="currentCurrencyLabel">通貨</span>数 (直接入力可能)
+        <input type="number" id="currentCurrency" min="0" required step="1" pattern="\d*">
+        <span class="error" id="currentCurrencyErr"></span>
+      </label>
+    </div>
+
+    <!-- 即時入力ボタン -->
+    <div class="quick-btns" id="quickBtnsArea"></div>
+
+    <!-- ステータス表示 -->
+    <div class="status" id="statusArea"></div>
+
+    <!-- 目標編集ボタン群 -->
+    <div class="goal-edit-btns">
+      <button id="editTargetCurrencyBtn" type="button">目標個数変更</button>
+      <button id="editTargetDateBtn" type="button">目標日付変更</button>
+    </div>
+    <!-- 目標個数編集パネル -->
+    <div class="goal-edit-panel" id="editTargetCurrencyPanel" style="display:none;">
+      <input type="number" id="editTargetCurrencyInput" min="1" step="1" style="width:7em;">
+      <div class="goal-edit-btn-row">
+        <button id="saveTargetCurrencyBtn" type="button">保存</button>
+        <button id="cancelTargetCurrencyBtn" type="button">キャンセル</button>
+        <button id="deleteTargetCurrencyBtn" type="button" style="color:#e11d48;">目標削除</button>
+      </div>
+    </div>
+    <!-- 目標日付編集パネル -->
+    <div class="goal-edit-panel" id="editTargetDatePanel" style="display:none;">
+      <input type="date" id="editTargetDateInput" style="width:10em;">
+      <div class="date-quick-btns">
+        <button type="button" class="date-quick-btn" data-days="-7" data-target="editTargetDateInput">1週間後</button>
+        <button type="button" class="date-quick-btn" data-days="-30" data-target="editTargetDateInput">1ヶ月後</button>
+        <button type="button" class="date-quick-btn" data-days="-90" data-target="editTargetDateInput">3ヶ月後</button>
+      </div>
+      <div class="goal-edit-btn-row">
+        <button id="saveTargetDateBtn" type="button">保存</button>
+        <button id="cancelTargetDateBtn" type="button">キャンセル</button>
+        <button id="deleteTargetDateBtn" type="button" style="color:#e11d48;">目標削除</button>
+      </div>
+    </div>
+
+    <!-- グラフ表示 -->
+    <div class="graph-area">
+      <canvas id="currencyChart" width="400" height="210"></canvas>
+    </div>
+
+    <!-- 履歴表示 -->
+    <div class="history-area">
+      <table id="historyTable">
+        <thead>
+          <tr>
+            <th>日付</th>
+            <th id="historyAmountLabel">通貨数</th>
+            <th>増減</th>
+            <th>メモ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- JSで履歴行を追加 -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="small">
+      ※cookieやlocalStorageを削除するとデータは消えます。<br>
+      ※記録のバックアップはエクスポート機能をご活用ください。
+    </div>
+
+    <!-- ページ最下部：エクスポート・インポートと「すべてリセット」 -->
+    <div style="margin:2em 0 0 0;">
+      <div class="export-area">
+        <button id="exportCSV">csvエクスポート</button>
+        <button id="exportJSON">jsonエクスポート</button>
+        <button id="importCSV">csvインポート</button>
+        <input type="file" id="csvFileInput" accept=".csv" style="display:none;">
+        <button id="importJSON">jsonインポート</button>
+        <input type="file" id="jsonFileInput" accept=".json" style="display:none;">
+      </div>
+      <div style="text-align:right;margin:1.3em 0 0.1em 0;">
+        <button id="resetAllBtn" type="button" class="reset-btn" style="font-size:0.97em;">すべてリセット</button>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
