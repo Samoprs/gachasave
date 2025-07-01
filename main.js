@@ -379,6 +379,8 @@ function openSlotSettingsModal(idx) {
 
   // ラベル初期値
   document.getElementById("slotSettingsLabelInput").value = slot.label;
+  // 通貨ラベル初期値
+  document.getElementById("slotSettingsCurrencyInput").value = slot.data.currencyLabel || "通貨";
   // 即時入力ボタン初期値
   const quickBtns = slot.data.quickBtns || QUICK_BTN_TEMPLATE;
   let html = "";
@@ -418,6 +420,25 @@ function openSlotSettingsModal(idx) {
     slotsObj.slots[idx].label = v;
     saveSlots(slotsObj);
     renderSlotSwitcher();
+  };
+
+  // 通貨ラベル保存
+  document.getElementById("slotSettingsCurrencyInput").onchange = function() {
+    let v = this.value.trim();
+    if (!v) v = "通貨";
+    if (v.length > 8) v = v.slice(0, 8);
+    slotsObj.slots[idx].data.currencyLabel = v;
+    saveSlots(slotsObj);
+    if (getActiveSlotIdx() === idx) {
+      // アクティブスロットの場合は表示を更新
+      const label = v;
+      document.getElementById("currencyLabelInput").value = label;
+      document.getElementById("targetCurrencyLabel").textContent = label;
+      document.getElementById("currentCurrencyLabel").textContent = label;
+      document.getElementById("settingsCurrentCurrencyLabel").textContent = label;
+      document.getElementById("historyAmountLabel").textContent = label + "数";
+      renderStatus(getActiveData());
+    }
   };
 
   // データリセット
