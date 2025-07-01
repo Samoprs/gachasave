@@ -43,7 +43,7 @@ function getEmptySlots() {
   };
 }
 
-// --- 利用規約同意管理 ---
+// --- 利用規約同意 ---
 function checkTermsConsent() {
   return localStorage.getItem("gachaTermsConsent") === "true";
 }
