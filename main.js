@@ -503,7 +503,7 @@ document.getElementById("contactTwitterBtn").onclick = function() {
 
 // 使い方ガイドボタン
 document.getElementById("usageGuideBtn").onclick = function() {
-  const guideUrl = "https://note.com/preview/n4548ff95fac3?prev_access_key=8e2566085f72f683dbeee5ef620b9c5f";
+  const guideUrl = "https://note.com/kanpachikuma/n/ncf74f6b7fc79";
   window.open(guideUrl, "_blank");
 };
 
